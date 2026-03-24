@@ -6,6 +6,7 @@ library("ggplot2")
 library("fitdistrplus")
 library("dplyr")
 library("interactions")
+library("emmeans")
 
 all_data<- read.csv('all_ages_face_dwell_time_last_half.csv')
 
@@ -34,9 +35,6 @@ all_data <- filter_trials(all_data)
 
 all_data <- all_data %>%
   mutate(Age = as.numeric(as.character(Age)))  # Ensure Age is numeric
-
-#all_data <- all_data %>%
-#mutate(EPDS = as.numeric(as.character(EPDS)))  # Ensure Age is numeric
 
 # dummy variables to debug within the function
 predictor <- "Age"
@@ -139,3 +137,21 @@ ggplot(data = subject_means, aes(x = as.numeric(Age), y = DwellTimeFace, color=E
     y = "Mean latency to distractor"
   ) +
   theme_bw()
+
+# FOLLOW-UP ANALYSES - INTERACTIONS & MAIN EFFECTS
+# ---- EMmeans for emotion principal effect ----
+#pairs comparison between emotion all ages
+emm_emotion <- emmeans(lmer_model, ~ Emotion)
+pairs_emotion <- pairs(emm_emotion, adjust = "tukey")
+print(pairs_emotion)
+
+# ---- EMtrends for interaction Emotion x poly1 ----
+# slopes pairs comparison of poly1 between emotion
+emt_interaction_poly1 <- emtrends(lmer_model, ~ Emotion, var = "poly1")
+pairs_trends_linear <- pairs(emt_interaction_poly1, adjust = "tukey")
+print(pairs_trends_linear)
+
+# ---- EMtrends for interaction Emotion x poly2 ----
+emt_interaction_poly2 <- emtrends(lmer_model, ~ Emotion, var = "poly2")
+pairs_interaction_quad <- pairs(emt_interaction_poly2, adjust = "tukey")
+print(pairs_interaction_quad)
